@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ProductCard } from "./ProductCard";
 import "../css/Home.css";
 
@@ -8,6 +9,9 @@ export function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
+
+  const keyword = searchParams.get("search") || "";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -15,14 +19,17 @@ export function Home() {
         setLoading(true);
         setError("");
 
-        const response = await fetch(`${API_URL}/products`);
+        const url = keyword.trim()
+          ? `${API_URL}/products/search?keyword=${encodeURIComponent(keyword)}`
+          : `${API_URL}/products`;
+
+        const response = await fetch(url);
 
         if (!response.ok) {
           throw new Error("Failed to fetch products");
         }
 
         const data = await response.json();
-
         setProducts(data);
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -35,11 +42,9 @@ export function Home() {
     };
 
     fetchProducts();
-  }, []);
+  }, [keyword]);
 
   const handleAddToCart = (product) => {
-    // This is only a temporary demonstration.
-    // It does not save a cart to the database.
     alert(`${product.name} added to cart`);
   };
 
@@ -61,10 +66,12 @@ export function Home() {
 
   return (
     <div className="product-container">
-      <h1>Products</h1>
-
       {products.length === 0 ? (
-        <p>No products found. Add your first product!</p>
+        <p>
+          {keyword
+            ? "No matching products found."
+            : "No products found. Add your first product!"}
+        </p>
       ) : (
         <div className="product-list">
           {products.map((product) => (

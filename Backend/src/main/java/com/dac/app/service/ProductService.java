@@ -1,52 +1,66 @@
 package com.dac.app.service;
 
-import java.io.IOException;
+import java.util.ArrayList;
+
+
+import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.dac.app.model.Product;
-import com.dac.app.repository.ProductRepo;
 
 @Service
 public class ProductService {
 	
-	@Autowired
-	private ProductRepo repo;
-
-	public List<Product> getAllProducts() {
-		return repo.findAll();
+	
+	List<Product> products = new ArrayList<> (Arrays.asList(
+			new Product(101, "IPhone", 50000), 
+			new Product(102, "Camera", 60000),
+			new Product(103, "Laptop", 70000)));
+	
+	
+	public List<Product> getProducts(){
+		return products;
 	}
-
-	public Product getProductById(int id) {	
-		return repo.findById(id).orElse(null);
-	}
-
-	public Product addProduct(Product product, MultipartFile imageFile) throws IOException {
-		product.setImageName(imageFile.getOriginalFilename());
-		product.setImageType(imageFile.getContentType());
-		product.setImageData(imageFile.getBytes());		
-		return repo.save(product);
-	}
-
-	public Product updateProduct(int id, Product product, MultipartFile imageFile) throws IOException {
-		product.setImageData(imageFile.getBytes());
-		product.setImageName(imageFile.getOriginalFilename());
-		product.setImageType(imageFile.getContentType());
-		return repo.save(product);
-	}
-
-	public void deleteProduct(int id) {
-		repo.deleteById(id);	
-	}
-
-	public List<Product> searchProducts(String keyword) {
-		return repo.searchProducts(keyword);
-	}
-
 	
 
- 
+	public Product getProductById(int prodId) {
+		
+		for(Product p : products) {
+			if(p.getProdId() == prodId) {
+				return p;
+			}		
+		}
+		return null;
+	}
+	
+	public void addProduct(Product prod) {
+		products.add(prod);
+	}
+
+
+	public void updateProduct(Product prod) {
+		int index = 0;
+		for(int i=0; i<products.size(); i++) {
+			if(products.get(i).getProdId() == prod.getProdId()) {
+				index = i;
+			}
+		}
+		products.set(index, prod);
+	}
+
+
+	public void deleteProductById(int prodId) {
+		int index = 0;
+		for(int i=0; i<products.size(); i++) {
+			if(products.get(i).getProdId() == prodId) {
+				index = i;
+			}
+		}
+		products.remove(index);
+		
+	}
+	
 }
+

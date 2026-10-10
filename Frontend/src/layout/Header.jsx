@@ -1,27 +1,40 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import "../css/Header.css";
 
 export function Header() {
-  const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState("");
 
-  const handleSearch = () => {
-    console.log("Searching for:", search);
+  const handleSearch = (e) => {
+    e.preventDefault();
+
+    if (keyword.trim()) {
+      navigate(`/?search=${encodeURIComponent(keyword.trim())}`);
+    }
   };
+
   return (
-    <>
-      <nav>
+    <nav className="header">
+      <div className="nav-left">
         <NavLink to="/">Home</NavLink>
         <NavLink to="/addProduct">Add Product</NavLink>
-        <NavLink to="/productCard">ProductCard</NavLink>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-        <button onClick={handleSearch}> Search 🔍 </button>
-        <NavLink to="/cart">Cart 🛒 </NavLink>
-      </nav>
-    </>
+        <NavLink to="/updateProduct">Update Product</NavLink>
+      </div>
+
+      <div className="nav-right">
+        <form className="search-form" onSubmit={handleSearch}>
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
+          <button type="submit">Search 🔍</button>
+        </form>
+
+        <NavLink to="/cart">Cart 🛒</NavLink>
+      </div>
+    </nav>
   );
 }

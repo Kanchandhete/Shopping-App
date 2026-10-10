@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "../css/ProductDetails.css";
 
@@ -7,6 +7,7 @@ const API_URL = "http://localhost:8080/api";
 
 export function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [image, setImage] = useState("");
@@ -14,31 +15,19 @@ export function ProductDetails() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    let imageUrl = "";
     let cancelled = false;
+    let imageUrl = "";
 
     const fetchProduct = async () => {
-      setLoading(true);
-      setError("");
-      setProduct(null);
-      setImage("");
-
       try {
-        const response = await fetch(`${API_URL}/products/${id}`);
+        setLoading(true);
+        setError("");
 
-        if (!response.ok) {
-          throw new Error(
-            response.status === 404
-              ? "Product not found."
-              : "Failed to fetch product.",
-          );
-        }
-
-        const data = await response.json();
+        const response = await axios.get(`${API_URL}/products/${id}`);
 
         if (cancelled) return;
 
-        setProduct(data);
+        setProduct(response.data);
 
         try {
           const imageResponse = await axios.get(
@@ -51,11 +40,15 @@ export function ProductDetails() {
           imageUrl = URL.createObjectURL(imageResponse.data);
           setImage(imageUrl);
         } catch (imageError) {
-          console.error("Error loading product image:", imageError);
+          console.error("Error loading image:", imageError);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err.message || "Unable to load product.");
+          setError(
+            err.response?.status === 404
+              ? "Product not found."
+              : "Failed to fetch product.",
+          );
         }
       } finally {
         if (!cancelled) {
@@ -68,24 +61,41 @@ export function ProductDetails() {
 
     return () => {
       cancelled = true;
-
       if (imageUrl) {
         URL.revokeObjectURL(imageUrl);
       }
     };
   }, [id]);
 
-  if (loading) {
-    return <h2>Loading product...</h2>;
-  }
+  const handleEditClick = () => {
+    navigate(`/products/update/${id}`);
+  };
 
-  if (error) {
-    return <p role="alert">{error}</p>;
-  }
+  const deleteProduct = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this product?",
+    );
 
-  if (!product) {
-    return <p>Product not found.</p>;
-  }
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(`${API_URL}/products/${id}`);
+
+      alert("Product deleted successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting product:", error);
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to delete product. Please try again.",
+      );
+    }
+  };
+
+  if (loading) return <h2>Loading product...</h2>;
+  if (error) return <p role="alert">{error}</p>;
+  if (!product) return <p>Product not found.</p>;
 
   return (
     <div className="product-details">
@@ -120,11 +130,15 @@ export function ProductDetails() {
       </p>
 
       <button
+        onClick={() => onAddToCart(product)}
         disabled={!product.available || product.quantity <= 0}
-        onClick={() => alert(`${product.name} added to cart`)}
       >
         Add to Cart
       </button>
+
+      <button onClick={handleEditClick}>Update</button>
+
+      <button onClick={deleteProduct}>Delete</button>
     </div>
   );
 }

@@ -156,7 +156,7 @@ export function AddProduct() {
             />
           </div>
 
-          <div className="form-group">
+          {/* <div className="form-group">
             <label htmlFor="category">Category</label>
             <input
               id="category"
@@ -167,6 +167,25 @@ export function AddProduct() {
               placeholder="Enter category"
               required
             />
+          </div> */}
+
+          <div className="form-group">
+            <label htmlFor="category">Category</label>
+            <select
+              id="category"
+              name="category"
+              value={product.category}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select category</option>
+              <option value="Laptop">Laptop</option>
+              <option value="Smartphone">Smartphone</option>
+              <option value="Headphone">Headphone</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Fashion">Fashion</option>
+              <option value="Toys">Toys</option>
+            </select>
           </div>
 
           <div className="form-group">
